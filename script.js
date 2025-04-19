@@ -6,8 +6,8 @@ const distanceDisplay = document.getElementById("distance");
 const divOutputs = document.getElementsByClassName("divOutputs");
 
 // API endpoints
-const CAPTION_API = "https://wooded-rose-otter.glitch.me/caption";
-const DISTANCE_API = "http://192.168.137.204/distance";
+const CAPTION_API = "https://your-glitch-app.glitch.me/caption"; // Glitch URL for caption API
+const DISTANCE_API = "https://your-glitch-app.glitch.me/distance"; // Glitch URL for distance API
 
 // Initialize camera
 async function initCamera() {
@@ -51,13 +51,10 @@ async function captureAndDescribe() {
   }
 }
 
-// Get distance from ESP8266
+// Get distance from server (latest distance from ESP8266)
 async function getDistance() {
   try {
-    const response = await fetch(DISTANCE_API, {
-      signal: AbortSignal.timeout(3000) // 3 second timeout
-    });
-    
+    const response = await fetch(DISTANCE_API);
     if (!response.ok) throw new Error(`Device error: ${response.status}`);
     
     const data = await response.json();
@@ -90,7 +87,7 @@ function speak(text) {
 output.addEventListener("click", captureAndDescribe);
 distanceDisplay.addEventListener("click", getDistance);
 
-// Initialize
+// Initialize camera
 initCamera();
 
 // Poll distance every second
