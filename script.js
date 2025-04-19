@@ -78,7 +78,7 @@ async function getDistance() {
       console.log('Raw response:', response);
 
       if (!response.ok) {
-        throw new Error(HTTP error! status: ${response.status});
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
@@ -88,7 +88,7 @@ async function getDistance() {
       console.log('Distance value:', distance);
 
       if (distance) {
-        distance1.textContent = Distance: ${distance} cm;
+        distance1.textContent = `Distance: ${distance} cm`;
       }
 
     } catch (error) {
