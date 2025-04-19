@@ -14,87 +14,66 @@ navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
     console.error("Camera error:", err);
     alert("Could not access the camera.");
   });
-output.addEventListener("click", () => {
-    const context = canvas.getContext("2d");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
-    const imageData = canvas.toDataURL("image/png").split(',')[1]; // Get base64 only
-  
-    fetch("https://wooded-rose-otter.glitch.me/caption", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: imageData })
-    })
-      .then(res => res.json())
-      .then(data => {
-        output.textContent = data.caption || "No description available.";
-        speak(data.caption);
-      })
-      .catch(err => {
-        console.error("Error:", err);
-        output.textContent = "Error getting image description.";
-      });
-  });
 
-  distance.addEventListener("click", () => {
-    const context = canvas.getContext("2d");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
-    const imageData = canvas.toDataURL("image/png").split(',')[1]; // Get base64 only
-  
-    fetch("https://wooded-rose-otter.glitch.me/caption", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: imageData })
+// Trigger captioning from camera feed
+output.addEventListener("click", () => {
+  captureAndSend();
+});
+
+distance.addEventListener("click", () => {
+  captureAndSend();
+});
+
+// Function to capture and send image for captioning
+function captureAndSend() {
+  const context = canvas.getContext("2d");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const imageData = canvas.toDataURL("image/png").split(',')[1]; // base64 image only
+
+  fetch("https://wooded-rose-otter.glitch.me/caption", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image: imageData })
+  })
+    .then(res => res.json())
+    .then(data => {
+      output.textContent = data.caption || "No description available.";
+      speak(data.caption);
     })
-      .then(res => res.json())
-      .then(data => {
-        output.textContent = data.caption || "No description available.";
-        speak(data.caption);
-      })
-      .catch(err => {
-        console.error("Error:", err);
-        output.textContent = "Error getting image description.";
-      });
-  });
-// Speak the description
+    .catch(err => {
+      console.error("Error:", err);
+      output.textContent = "Error getting image description.";
+    });
+}
+
+// Speak the caption
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
   speechSynthesis.speak(utterance);
 }
 
+// 🔁 Fetch distance from Glitch backend every second
 async function getDistance() {
-    try {
-      const url = 'http://192.168.137.204/distance';
-      console.log('Sending request to:', url);
+  try {
+    const response = await fetch('https://wooded-rose-otter.glitch.me/distance');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-      const response = await fetch(url);
+    const data = await response.json();
+    const distance = data.distance;
 
-      console.log('Raw response:', response);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Received data:', data);
-
-      const distance = data.distance;
-      console.log('Distance value:', distance);
-
-      if (distance) {
-        distance1.textContent = `Distance: ${distance} cm`;
-      }
-
-    } catch (error) {
-      console.error('Fetch error:', error.message || error);
+    if (typeof distance === "number") {
+      distance1.textContent = `Distance: ${distance.toFixed(2)} cm`;
+    } else {
+      distance1.textContent = "Distance: N/A";
     }
+  } catch (error) {
+    console.error("Fetch error:", error.message || error);
+    distance1.textContent = "Distance: Error";
   }
+}
 
-  // Fetch every second
-  setInterval(getDistance, 1000);
+setInterval(getDistance, 1000);
