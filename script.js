@@ -20,7 +20,12 @@ captureBtn.addEventListener("click", () => {
   canvas.height = video.videoHeight;
   context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  const imageData = canvas.toDataURL("image/png").split(',')[1]; // Get base64 only
+  const imageData = canvas.toDataURL("image/png").split(',')[1];
+
+  if (!imageData || imageData.length < 100) {
+    alert("Image data is empty. Please try again.");
+    return;
+  }
 
   fetch("https://wooded-rose-otter.glitch.me/caption", {
     method: "POST",
