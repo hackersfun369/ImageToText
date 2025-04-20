@@ -58,22 +58,15 @@ function speak(text) {
 
 // 🔁 Fetch distance from Glitch backend every second
 async function getDistance() {
-  try {
-    const response = await fetch('https://wooded-rose-otter.glitch.me/distance');
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-    const data = await response.json();
-    const distance = data.distance;
-
-    if (typeof distance === "number") {
-      distance1.textContent = `Distance: ${distance.toFixed(2)} cm`;
-    } else {
-      distance1.textContent = "Distance: N/A";
+    try {
+      const url = 'https://blynk.cloud/external/api/get?token=Q-7lAZiPkUJH_XutFsthGvCqXa43rElg&v0';
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }const data = await response.json();
+        distance1.textContent = `Distance: ${data} cm`;
+    } catch (error) {
+      console.error('Fetch error:', error.message || error);
     }
-  } catch (error) {
-    console.error("Fetch error:", error.message || error);
-    distance1.textContent = "Distance: Error";
   }
-}
-
 setInterval(getDistance, 1000);
