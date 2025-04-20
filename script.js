@@ -1,9 +1,7 @@
 const video = document.getElementById("camera");
 const canvas = document.getElementById("canvas");
-const captureBtn = document.getElementById("captureBtn");
 const output = document.getElementById("output");
 const distance1 = document.getElementById("distance");
-const divOutputs = document.getElementsByClassName("divOutputs");
 
 // Start the mobile camera
 navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -15,23 +13,14 @@ navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
     alert("Could not access the camera.");
   });
 
-// Trigger captioning from camera feed
-output.addEventListener("click", () => {
-  captureAndSend();
-});
-
-distance.addEventListener("click", () => {
-  captureAndSend();
-});
-
-// Function to capture and send image for captioning
-function captureAndSend() {
+// Capture and describe the current video frame
+function captureAndDescribeImage() {
   const context = canvas.getContext("2d");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  const imageData = canvas.toDataURL("image/png").split(',')[1]; // base64 image only
+  const imageData = canvas.toDataURL("image/png").split(',')[1]; // Get base64 only
 
   fetch("https://wooded-rose-otter.glitch.me/caption", {
     method: "POST",
@@ -49,24 +38,39 @@ function captureAndSend() {
     });
 }
 
-// Speak the caption
+// Speak the description
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
   speechSynthesis.speak(utterance);
 }
 
-// 🔁 Fetch distance from Glitch backend every second
+// Get distance from Blynk API
 async function getDistance() {
-    try {
-      const url = 'https://blynk.cloud/external/api/get?token=Q-7lAZiPkUJH_XutFsthGvCqXa43rElg&v0';
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }const data = await response.json();
-        distance1.textContent = `Distance: ${data} cm`;
-    } catch (error) {
-      console.error('Fetch error:', error.message || error);
+  try {
+    const url = 'https://blynk.cloud/external/api/get?token=Q-7lAZiPkUJH_XutFsthGvCqXa43rElg&v0';
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const data = await response.json();
+    distance1.textContent = `Distance: ${data} cm`;
+
+    if (data < 70) {
+      captureAndDescribeImage();
+    }
+  } catch (error) {
+    console.error('Fetch error:', error.message || error);
   }
+}
+
+// Periodically check distance
 setInterval(getDistance, 1000);
+
+// Manual triggers
+output.addEventListener("click", captureAndDescribeImage);
+
+distance1.addEventListener("click", () => {
+  speak(distance1.textContent); // Speak the distance when clicked
+});
