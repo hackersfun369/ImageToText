@@ -57,7 +57,7 @@ async function getDistance() {
     const data = await response.json();
     distance1.textContent = `Distance: ${data} cm`;
 
-    if (data < 70) {
+    if (data < 30) {
       captureAndDescribeImage();
     }
   } catch (error) {
