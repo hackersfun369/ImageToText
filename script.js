@@ -48,7 +48,7 @@ function speak(text) {
 // Get distance from Blynk API
 async function getDistance() {
   try {
-    const url = 'https://blynk.cloud/external/api/get?token=Q-7lAZiPkUJH_XutFsthGvCqXa43rElg&v0';
+    const url = 'https://blynk.cloud/external/api/get?token=Q-7lAZiPkUJH_XutFsthGvCqXa43rElg&v1';
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
